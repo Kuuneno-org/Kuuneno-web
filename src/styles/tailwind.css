@@ -1,0 +1,9 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Optionnel : anti “scroll bounce” iOS et style global */
+html, body {
+  height: 100%;
+  background: #050814;
+}
