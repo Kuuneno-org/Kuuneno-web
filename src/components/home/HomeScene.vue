@@ -5,6 +5,7 @@
     <div class="tip" v-if="showTip">
       Cliquez sur un objet
     </div>
+
   </div>
 </template>
 
