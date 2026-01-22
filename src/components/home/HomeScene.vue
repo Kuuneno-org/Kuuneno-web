@@ -1,5 +1,17 @@
 <template>
   <div ref="wrap" class="wrap" @pointermove="onPointerMove" @click="onClick">
+    <transition name="fade">
+      <video
+        v-if="showVideo"
+        ref="videoEl"
+        class="book-video"
+        muted
+        playsinline
+        crossorigin="anonymous"
+      >
+        <source :src="videoUrl" type="video/mp4" />
+      </video>
+    </transition>
     <canvas ref="canvas" class="canvas"></canvas>
 
     <div class="tip" v-if="showTip">
@@ -10,9 +22,10 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch, computed } from "vue";
 import * as THREE from "three";
 import type { HomeNavItem } from "@/stores/homeControls";
+import videoUrl from "@/assets/Livre.mp4";
 
 const props = defineProps<{
   activeIndex: number;
@@ -45,6 +58,34 @@ const items: HomeNavItem[] = [
   { kind: "book", label: "Lore", route: "/lore" },
   { kind: "gamepad", label: "Mini-jeu", route: "/mini-jeu" },
 ];
+const isActiveItemLore = computed(() => {
+  const item = items[props.activeIndex];
+  return item?.kind === "book";
+});
+
+const showVideo = ref(false);
+const videoEl = ref<HTMLVideoElement | null>(null);
+let videoTimeout: ReturnType<typeof setTimeout> | null = null;
+
+watch(isActiveItemLore, (isLore) => {
+  if (videoTimeout) clearTimeout(videoTimeout);
+
+  if (isLore) {
+    // Délai pour laisser le temps au carrousel de tourner
+    videoTimeout = setTimeout(() => {
+      showVideo.value = true;
+      // nextTick pour être sûr que l'élément est dans le DOM
+      setTimeout(() => {
+        if (videoEl.value) {
+          videoEl.value.currentTime = 0;
+          videoEl.value.play().catch(() => {});
+        }
+      }, 50);
+    }, 500);
+  } else {
+    showVideo.value = false;
+  }
+}, { immediate: true });
 
 let raf = 0;
 let targetRotationY = 0; // rotation cible du carousel
@@ -394,5 +435,30 @@ onBeforeUnmount(() => cleanup());
   color: rgba(255,255,255,0.90);
   font-size: 14px;
   pointer-events: none;
+}
+
+.book-video {
+  position: absolute;
+  top: 92%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotateX(60deg);
+  width: 160px;
+  height: 160px;
+  object-fit: cover;
+  z-index: 10;
+  /* opacity: 0.9; */
+  pointer-events: none;
+  box-shadow: 0 0 20px rgba(255, 178, 74, 0.3);
+  border-radius: 4px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity .5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>
