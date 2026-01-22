@@ -448,7 +448,7 @@ onBeforeUnmount(() => cleanup());
   z-index: 10;
   /* opacity: 0.9; */
   pointer-events: none;
-  box-shadow: 0 0 20px rgba(255, 178, 74, 0.3);
+  /* box-shadow: 0 0 20px rgba(255, 178, 74, 0.3); */
   border-radius: 4px;
 }
 
