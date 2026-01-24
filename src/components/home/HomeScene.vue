@@ -100,10 +100,23 @@ function resize() {
   camera.updateProjectionMatrix();
 }
 
+// Évite de faire un tour complet inutilement. On place la cible à la position la plus proche.
 function setTargetToIndex(index: number) {
   // Objet i est placé à angle i*step → pour l’avoir en face, on tourne à -i*step
   const step = (Math.PI * 2) / items.length;
-  targetRotationY = -index * step;
+  const rawTarget = -index * step;
+
+  // On cherche la cible équivalente la plus proche de la rotation actuelle
+  // pour éviter de faire un tour complet inutilement.
+  const current = targetRotationY;
+  const twoPi = Math.PI * 2;
+
+  let diff = (rawTarget - current) % twoPi;
+  // Ramener diff dans [-PI, PI]
+  if (diff > Math.PI) diff -= twoPi;
+  if (diff < -Math.PI) diff += twoPi;
+
+  targetRotationY = current + diff;
 }
 
 function makeFire(): THREE.Mesh {
