@@ -38,7 +38,7 @@ onMounted(() => {
     model.rotation.set(0, 20, 0);
 
     // Échelle arbitraire
-    model.scale.set(2, 2, 2);
+    model.scale.set(1.5, 1.5, 1.5);
 
     // Animation
     if (gltf.animations.length > 0) {
