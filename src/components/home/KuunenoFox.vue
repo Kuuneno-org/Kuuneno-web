@@ -2,15 +2,13 @@
 import { onMounted, onBeforeUnmount } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import gamepadUrl from '@/assets/3D/Objects/gamepad.glb?url';
-import plumbobUrl from '@/assets/3D/Objects/plumbob.glb?url';
+import gamepadUrl from '@/assets/3D/Objects/fox.glb?url';
 
 const props = defineProps<{
   scene: THREE.Scene;
 }>();
 
 let model: THREE.Group | null = null;
-let plumbobModel: THREE.Group | null = null;
 let mixer: THREE.AnimationMixer | null = null;
 let rafId: number = 0;
 const clock = new THREE.Clock();
@@ -26,16 +24,16 @@ onMounted(() => {
     // x: 10  -> légèrement à droite du centre du feu de camp
     // y: 0.5 -> juste au-dessus du niveau de la Terre
     // z: 5  -> légèrement vers l'avant du centre du feu de camp
-    model.position.set(0, 0.80, 0);
+    model.position.set(0, 2.1, 4);
 
     // Rotation : posé au sol ou sur un sac de couchage
     // y: 0 -> face vers le haut
     // x: 20 -> légèrement vers la gauche
     // z: 0 -> face vers l'avant
-    model.rotation.set(80, 0, 20);
+    model.rotation.set(0, Math.PI * 2, 0);
 
     // Échelle arbitraire
-    model.scale.set(0.2, 0.2, 0.2);
+    model.scale.set(1.5, 1.5, 1.5);
 
     // Animation interne du GLB
     if (gltf.animations.length > 0) {
@@ -47,32 +45,6 @@ onMounted(() => {
     // Ajout à la scène globale
     props.scene.add(model);
 
-    // Chargement du Plumbob
-    loader.load(plumbobUrl, (gltfPlumbob) => {
-      plumbobModel = gltfPlumbob.scene;
-      
-      // Position au-dessus du gamepad (Gamepad est à 0, 0.80, 0)
-      plumbobModel.position.set(0, 1, 0);
-      
-      // Échelle
-      plumbobModel.scale.set(0.2, 0.2, 0.2);
-      
-      // Effet de glow (emissive)
-      plumbobModel.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          if (child.material) {
-            // Assurons-nous que le matériau gère l'emissive
-            if ('emissive' in child.material) {
-              (child.material as THREE.MeshStandardMaterial).emissive = new THREE.Color(0x00ff00); // Vert Sims
-              (child.material as THREE.MeshStandardMaterial).emissiveIntensity = 0.8;
-            }
-          }
-        }
-      });
-      
-      props.scene.add(plumbobModel);
-    });
-
     // Démarrage de la boucle d'animation locale
     animate();
   });
@@ -82,10 +54,6 @@ function animate() {
   const delta = clock.getDelta();
   if (mixer) {
     mixer.update(delta);
-  }
-  // Rotation permanente du Plumbob
-  if (plumbobModel) {
-    plumbobModel.rotation.y += 0.02;
   }
   rafId = requestAnimationFrame(animate);
 }
@@ -97,18 +65,6 @@ onBeforeUnmount(() => {
 
     // Nettoyage basique
     model.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.geometry.dispose();
-        if (child.material instanceof THREE.Material) {
-          child.material.dispose();
-        }
-      }
-    });
-  }
-
-  if (plumbobModel) {
-    props.scene.remove(plumbobModel);
-    plumbobModel.traverse((child) => {
       if (child instanceof THREE.Mesh) {
         child.geometry.dispose();
         if (child.material instanceof THREE.Material) {

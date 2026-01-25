@@ -19,28 +19,29 @@ const props = defineProps<{
 
 const loading = ref(true);
 const error = ref<string | null>(null);
+const win = window as any;
 
 onMounted(async () => {
   try {
     console.log("Initialisation de CheerpJ...");
 
     // Vérification que le script est bien chargé
-    if (!(window as any).cheerpjInit) {
+    if (!win.cheerpjInit) {
         throw new Error("CheerpJ n'est pas chargé. Le CDN de CheerpJ doit être inclus dans index.html");
     }
 
     // Initialisation du runtime CheerpJ
-    await (window as any).cheerpjInit();
+    await win.cheerpjInit();
 
     // On crée l'affichage graphique AVANT de lancer le JAR
     // On cible l'ID de notre conteneur
-    (window as any).cheerpjCreateDisplay(props.width || 800, props.height || 600, document.getElementById('cheerpj-container'));
+    win.cheerpjCreateDisplay(props.width || 800, props.height || 600, document.getElementById('cheerpj-container'));
 
     console.log(`Lancement du JAR : ${props.jarPath}`);
 
     // On lance l'application Java
     // On n'attend PAS la fin de l'exécution car c'est une boucle infinie (le jeu)
-    (window as any).cheerpjRunJar(props.jarPath, "");
+    win.cheerpjRunJar(props.jarPath, "");
 
     // On peut masquer le loader après un court délai pour laisser le temps à l'UI Swing de s'initialiser
     setTimeout(() => {
