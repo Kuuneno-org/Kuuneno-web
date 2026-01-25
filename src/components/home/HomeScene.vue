@@ -50,6 +50,11 @@
       :scene="scene"
     />
 
+    <PikminEvol
+      v-if="isSceneReady && scene"
+      :scene="scene"
+    />
+
     <KuunenoFox
       v-if="isSceneReady && scene"
       :scene="scene"
@@ -64,12 +69,14 @@ import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import gsap from "gsap";
-import GhostMask from "./GhostMask.vue";
-import MagicBook from "./MagicBook.vue";
-import MagicCredits from "./MagicCredits.vue";
-import MagicGamepad from "./MagicGamepad.vue";
-import MagicMoon from "./MagicMoon.vue";
-import Drone from "./FloatingDrone.vue";
+import GhostMask from "../sketchfab/GhostMask.vue";
+import MagicBook from "../sketchfab/MagicBook.vue";
+import MagicCredits from "../sketchfab/MagicCredits.vue";
+import MagicGamepad from "../sketchfab/MagicGamepad.vue";
+import MagicMoon from "../sketchfab/MagicMoon.vue";
+import Drone from "../sketchfab/FloatingDrone.vue";
+import KuunenoFox from "../sketchfab/KuunenoFox.vue";
+import PikminEvol from "../sketchfab/PikminEvol.vue";
 import type { HomeNavItem } from "@/stores/homeControls";
 import videoUrl from "@/assets/Livre.mp4";
 import campfireUrl from "@/assets/3D/Ambience camping/camping_buscraft_ambience/scene.gltf?url";
@@ -82,7 +89,6 @@ import tree6Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf
 import rockUrl from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Rock_2_A_Color1.gltf?url";
 import rock2Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Rock_1_A_Color1.gltf?url";
 import bushUrl from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Bush_1_A_Color1.gltf?url";
-import KuunenoFox from "./KuunenoFox.vue";
 
 const props = defineProps<{
   activeIndex: number;
@@ -152,7 +158,7 @@ const cameraViews = [
 
 // Vue par défaut (Feu de camp)
 const defaultView = {
-  pos: new THREE.Vector3(15, 5, 12),
+  pos: new THREE.Vector3(15, 5, 15),
   target: new THREE.Vector3(0, 1, 0)
 };
 
