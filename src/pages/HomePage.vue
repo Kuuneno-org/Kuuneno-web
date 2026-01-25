@@ -79,8 +79,8 @@ function next() {
   controls.next();
 }
 function recenter() {
-  // recenter = on garde l’index actuel, HomeScene se recentre automatiquement
-  controls.setIndex(controls.activeIndex);
+  // recenter = retour à la vue par défaut (aucun objet sélectionné)
+  controls.setIndex(-1);
 }
 
 function onSelectIndex(i: number) {

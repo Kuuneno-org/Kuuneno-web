@@ -1,5 +1,5 @@
 <template>
-  <div ref="wrap" class="wrap" @pointermove="onPointerMove" @click="onClick">
+  <div ref="wrap" class="wrap">
     <transition name="fade">
       <video
         v-if="showVideo"
@@ -15,7 +15,7 @@
     <canvas ref="canvas" class="canvas"></canvas>
 
     <div class="tip" v-if="showTip">
-      Cliquez sur un objet
+      Utilisez les flèches pour naviguer
     </div>
 
     <GhostMask
@@ -27,6 +27,7 @@
     <MagicBook 
       v-if="isSceneReady && scene && camera" 
       :scene="scene" 
+      :active="isActiveItemLore"
     />
 
     <MagicCredits
@@ -39,6 +40,21 @@
       :scene="scene" 
     />
 
+    <MagicMoon
+      v-if="isSceneReady && scene && camera" 
+      :scene="scene" 
+    />
+
+    <Drone
+      v-if="isSceneReady && scene"
+      :scene="scene"
+    />
+
+    <KuunenoFox
+      v-if="isSceneReady && scene"
+      :scene="scene"
+    />
+
   </div>
 </template>
 
@@ -47,24 +63,35 @@ import { onBeforeUnmount, onMounted, ref, watch, computed } from "vue";
 import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import gsap from "gsap";
 import GhostMask from "./GhostMask.vue";
 import MagicBook from "./MagicBook.vue";
 import MagicCredits from "./MagicCredits.vue";
 import MagicGamepad from "./MagicGamepad.vue";
+import MagicMoon from "./MagicMoon.vue";
+import Drone from "./FloatingDrone.vue";
 import type { HomeNavItem } from "@/stores/homeControls";
 import videoUrl from "@/assets/Livre.mp4";
 import campfireUrl from "@/assets/3D/Ambience camping/camping_buscraft_ambience/scene.gltf?url";
 import treeUrl from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_4_A_Color1.gltf?url";
+import tree2Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_1_A_Color1.gltf?url";
+import tree3Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_2_B_Color1.gltf?url";
+import tree4Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_2_A_Color1.gltf?url";
+import tree5Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_3_A_Color1.gltf?url";
+import tree6Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_3_B_Color1.gltf?url";
 import rockUrl from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Rock_2_A_Color1.gltf?url";
+import rock2Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Rock_1_A_Color1.gltf?url";
+import bushUrl from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Bush_1_A_Color1.gltf?url";
+import KuunenoFox from "./KuunenoFox.vue";
 
 const props = defineProps<{
   activeIndex: number;
 }>();
 
-const emit = defineEmits<{
-  (e: "select-index", i: number): void;
-  (e: "navigate", route: string): void;
-}>();
+// const emit = defineEmits<{
+//   (e: "select-index", i: number): void;
+//   (e: "navigate", route: string): void;
+// }>();
 
 const wrap = ref<HTMLDivElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -79,12 +106,6 @@ let mixer: THREE.AnimationMixer | null = null;
 const clock = new THREE.Clock();
 
 let root: THREE.Group | null = null;
-let carousel: THREE.Group | null = null;
-
-let raycaster: THREE.Raycaster | null = null;
-const pointer = new THREE.Vector2();
-
-const clickable: Array<{ mesh: THREE.Object3D; item: HomeNavItem; index: number }> = [];
 
 const items: HomeNavItem[] = [
   { kind: "mask", label: "Histoire interactive", route: "/histoire" },
@@ -92,6 +113,49 @@ const items: HomeNavItem[] = [
   { kind: "book", label: "Lore", route: "/lore" },
   { kind: "gamepad", label: "Mini-jeu", route: "/mini-jeu" },
 ];
+
+// Configuration des vues caméra pour chaque objet
+// Positions basées sur les emplacements des objets :
+// Mask: (5, 3, -10)
+// Credits (Altar): (-5, 1.8, 10)
+// Book: (10, -2.0, 6)
+// Gamepad: (0, 0.80, 0)
+// Les trois paramètres de THREE.Vector3 correspondent aux coordonnées 3D :
+// x (abscisse), y (ordonnée), z (profondeur).
+// Ici, ils définissent la position (pos) et le point regardé (target)
+// pour chaque vue caméra afin de cadrer précisément les objets 3D.
+const cameraViews = [
+  // Mask
+  {
+    pos: new THREE.Vector3(10, 4, -5),
+    target: new THREE.Vector3(5, 3, -10)
+  },
+  // Credits
+  {
+    // Position calculée pour être "en face" de l'autel (qui est à -9, 0.9, 6)
+    // On se place entre le feu (0,0,0) et l'autel, mais assez proche de l'autel pour bien le voir
+    // L'autel est loin (-9, 6), on s'approche
+    pos: new THREE.Vector3(-6, 6.0, 4),
+    target: new THREE.Vector3(-9, 1.2, 6)
+  },
+  // Book
+  {
+    pos: new THREE.Vector3(13, 3, 8),
+    target: new THREE.Vector3(10, 0.5, 5)
+  },
+  // Gamepad
+  {
+    pos: new THREE.Vector3(1.6, 2.2, 1.6),
+    target: new THREE.Vector3(0, 0.8, 0)
+  }
+];
+
+// Vue par défaut (Feu de camp)
+const defaultView = {
+  pos: new THREE.Vector3(15, 5, 12),
+  target: new THREE.Vector3(0, 1, 0)
+};
+
 const isActiveItemLore = computed(() => {
   const item = items[props.activeIndex];
   return item?.kind === "book";
@@ -105,25 +169,21 @@ watch(isActiveItemLore, (isLore) => {
   if (videoTimeout) clearTimeout(videoTimeout);
 
   if (isLore) {
-    // Délai pour laisser le temps au carrousel de tourner
     videoTimeout = setTimeout(() => {
       showVideo.value = true;
-      // nextTick pour être sûr que l'élément est dans le DOM
       setTimeout(() => {
         if (videoEl.value) {
           videoEl.value.currentTime = 0;
           videoEl.value.play().catch(() => {});
         }
       }, 50);
-    }, 500);
+    }, 1000); // Délai un peu plus long pour laisser la caméra arriver
   } else {
     showVideo.value = false;
   }
 }, { immediate: true });
 
 let raf = 0;
-let targetRotationY = 0; // rotation cible du carousel
-const ROTATE_SPEED = 0.07;
 
 function resize() {
   if (!wrap.value || !renderer || !camera) return;
@@ -134,144 +194,33 @@ function resize() {
   camera.updateProjectionMatrix();
 }
 
-// Évite de faire un tour complet inutilement. On place la cible à la position la plus proche.
-function setTargetToIndex(index: number) {
-  // Objet i est placé à angle i*step → pour l’avoir en face, on tourne à -i*step
-  const step = (Math.PI * 2) / items.length;
-  const rawTarget = -index * step;
+function moveCameraTo(index: number) {
+  if (!camera || !controls) return;
 
-  // On cherche la cible équivalente la plus proche de la rotation actuelle
-  // pour éviter de faire un tour complet inutilement.
-  const current = targetRotationY;
-  const twoPi = Math.PI * 2;
+  const view = (index >= 0 && index < cameraViews.length) 
+    ? cameraViews[index] 
+    : defaultView;
 
-  let diff = (rawTarget - current) % twoPi;
-  // Ramener diff dans [-PI, PI]
-  if (diff > Math.PI) diff -= twoPi;
-  if (diff < -Math.PI) diff += twoPi;
+  // Animation de la position de la caméra
+  gsap.to(camera.position, {
+    x: view.pos.x,
+    y: view.pos.y,
+    z: view.pos.z,
+    duration: 1.5,
+    ease: "power2.inOut"
+  });
 
-  targetRotationY = current + diff;
-}
-
-/* ===================== OBJETS D ===================== */
-
-function makeMask(): THREE.Group {
-  const g = new THREE.Group();
-
-  const face = new THREE.Mesh(
-    new THREE.SphereGeometry(0.42, 32, 32),
-    new THREE.MeshStandardMaterial({ color: "#e9f0ff", roughness: 0.5 })
-  );
-  face.scale.set(1.2, 1, 0.55);
-  g.add(face);
-
-  const eyeMat = new THREE.MeshStandardMaterial({ color: "#0b1430" });
-  const eye1 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 0.08), eyeMat);
-  eye1.position.set(-0.15, 0.05, 0.22);
-  g.add(eye1);
-
-  const eye2 = eye1.clone();
-  eye2.position.x = 0.15;
-  g.add(eye2);
-
-  const hornMat = new THREE.MeshStandardMaterial({ color: "#ffb24a", roughness: 0.7 });
-  const horn1 = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.22, 16), hornMat);
-  horn1.position.set(-0.22, 0.30, 0.05);
-  horn1.rotation.z = 0.35;
-  g.add(horn1);
-
-  const horn2 = horn1.clone();
-  horn2.position.x = 0.22;
-  horn2.rotation.z = -0.35;
-  g.add(horn2);
-
-  return g;
-}
-
-function makeAltar(): THREE.Group {
-  const g = new THREE.Group();
-
-  const base = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.55, 0.65, 0.28, 40),
-    new THREE.MeshStandardMaterial({ color: "#12214a", roughness: 0.85 })
-  );
-  g.add(base);
-
-  const crystal = new THREE.Mesh(
-    new THREE.IcosahedronGeometry(0.22),
-    new THREE.MeshStandardMaterial({
-      color: "#ffffff",
-      emissive: "#7aa7ff",
-      emissiveIntensity: 0.85,
-      transparent: true,
-      opacity: 0.92,
-      roughness: 0.35,
-    })
-  );
-  crystal.position.y = 0.32;
-  g.add(crystal);
-
-  return g;
-}
-
-function makeBook(): THREE.Group {
-  const g = new THREE.Group();
-
-  const cover = new THREE.Mesh(
-    new THREE.BoxGeometry(0.62, 0.09, 0.44),
-    new THREE.MeshStandardMaterial({ color: "#0f1e44", roughness: 0.9 })
-  );
-  g.add(cover);
-
-  const pages = new THREE.Mesh(
-    new THREE.BoxGeometry(0.56, 0.05, 0.38),
-    new THREE.MeshStandardMaterial({ color: "#f7f9ff", roughness: 0.65 })
-  );
-  pages.position.y = 0.07;
-  g.add(pages);
-
-  const spine = new THREE.Mesh(
-    new THREE.BoxGeometry(0.04, 0.095, 0.44),
-    new THREE.MeshStandardMaterial({ color: "#ffb24a", roughness: 0.55 })
-  );
-  spine.position.x = 0.31;
-  g.add(spine);
-
-  return g;
-}
-
-function makeGamepad(): THREE.Group {
-  const g = new THREE.Group();
-
-  const body = new THREE.Mesh(
-    new THREE.BoxGeometry(0.72, 0.18, 0.40),
-    new THREE.MeshStandardMaterial({ color: "#1a2b55", roughness: 0.85 })
-  );
-  g.add(body);
-
-  const btn = new THREE.Mesh(
-    new THREE.SphereGeometry(0.055, 16, 16),
-    new THREE.MeshStandardMaterial({ color: "#ffb24a", roughness: 0.4 })
-  );
-  btn.position.set(0.22, 0.08, 0.10);
-  g.add(btn);
-
-  const btn2 = btn.clone();
-  btn2.position.set(0.30, 0.05, -0.02);
-  btn2.scale.setScalar(0.9);
-  g.add(btn2);
-
-  return g;
-}
-
-function makeItemMesh(kind: HomeNavItem["kind"]): THREE.Object3D {
-  switch (kind) {
-    case "mask": return makeMask();
-    case "altar": return makeAltar();
-    case "book": return makeBook();
-    case "gamepad": return makeGamepad();
-    default: return new THREE.Group();
-  }
+  // Animation de la cible des contrôles
+  gsap.to(controls.target, {
+    x: view.target.x,
+    y: view.target.y,
+    z: view.target.z,
+    duration: 1.5,
+    ease: "power2.inOut",
+    onUpdate: () => {
+      controls?.update();
+    }
+  });
 }
 
 function initScene() {
@@ -281,10 +230,8 @@ function initScene() {
   scene.fog = new THREE.Fog("#030814", 10, 34);
 
   camera = new THREE.PerspectiveCamera(45, 1, 0.1, 120);
-  // Vue plus "frontale" et légèrement surélevée (en face du feu)
-  camera.position.set(20, 12, 5);
-  camera.lookAt(5, 1.5, 0); // Regarde un peu au-dessus du sol (le feu)
-  // scene.add(camera); // Plus nécessaire d'ajouter la caméra à la scène si le mask n'est plus enfant
+  camera.position.copy(defaultView.pos);
+  camera.lookAt(defaultView.target);
 
   renderer = new THREE.WebGLRenderer({
     canvas: canvas.value,
@@ -296,8 +243,8 @@ function initScene() {
   controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.05;
-  controls.minDistance = 0.1; // Permettre de zoomer très près
-  controls.maxDistance = 50; // On permet de reculer davantage pour voir la scène large
+  controls.minDistance = 0.1;
+  controls.maxDistance = 50;
 
   // Restriction : on ne tourne qu'à l'horizontale (souris axe X -> rotation autour de Y)
   // On bloque l'angle vertical (polaire) pour ne pas passer sous le sol
@@ -305,9 +252,7 @@ function initScene() {
   // Navigation (pan) uniquement sur le plan horizontal (X, Z)
   controls.screenSpacePanning = false;
 
-  controls.target.set(0, 1.5, 0);
-
-  raycaster = new THREE.Raycaster();
+  controls.target.copy(defaultView.target);
 
   // Lumières (bleu nuit + feu orangé)
   scene.add(new THREE.AmbientLight(0xffffff, 0.35));
@@ -325,28 +270,26 @@ function initScene() {
 
   // === SOL / SCÈNE GLB ===================
   const loader = new GLTFLoader();
-  
-  // On signale que la scène est prête pour afficher les composants enfants
+
   isSceneReady.value = true;
 
-  // Création d'un sol étendu pour combler le vide
+  // Création d'un sol étendu
   const groundGeo = new THREE.CircleGeometry(60, 64);
-  const groundMat = new THREE.MeshStandardMaterial({ 
-    color: "#0b1420", // Teinte sombre bleu-vert nuit
+  const groundMat = new THREE.MeshStandardMaterial({
+    color: "#0b1420",
     roughness: 0.9,
-    metalness: 0.1 
+    metalness: 0.1
   });
   const ground = new THREE.Mesh(groundGeo, groundMat);
   ground.rotation.x = -Math.PI / 2;
-  ground.position.y = -2.05; // Juste un peu sous le modèle principal
+  ground.position.y = -2.05;
   ground.receiveShadow = true;
   root.add(ground);
 
-  // Chargement des éléments de décor (Arbres / Rochers)
+  // Chargement des éléments de décor
   const loadDecor = (url: string, count: number, minR: number, maxR: number, scale: number) => {
     loader.load(url, (gltf: GLTF) => {
       const model = gltf.scene;
-      // On traverse pour activer les ombres
       model.traverse((c) => {
         if ((c as THREE.Mesh).isMesh) {
           c.castShadow = true;
@@ -356,8 +299,6 @@ function initScene() {
 
       for (let i = 0; i < count; i++) {
         const clone = model.clone();
-        
-        // On cherche une position qui ne bloque pas la vue caméra -> centre
         let x = 0, z = 0;
         let attempts = 0;
         let valid = false;
@@ -369,12 +310,9 @@ function initScene() {
           x = Math.cos(angle) * radius;
           z = Math.sin(angle) * radius;
 
-          // Segment caméra (20, 8) -> centre (0, 0)
-          // On vérifie la distance du point (x, z) à ce segment
-          const cx = 20, cz = 8; // Position caméra
-          const tx = 0, tz = 0;  // Cible
-          
-          // Distance point-segment
+          // Vérification distance vision
+          const cx = 20, cz = 8;
+          const tx = 0, tz = 0;
           const l2 = (cx - tx)**2 + (cz - tz)**2;
           let t = ((x - tx) * (cx - tx) + (z - tz) * (cz - tz)) / l2;
           t = Math.max(0, Math.min(1, t));
@@ -382,7 +320,6 @@ function initScene() {
           const projZ = tz + t * (cz - tz);
           const dist = Math.hypot(x - projX, z - projZ);
 
-          // Si l'objet est trop près de l'axe de vision, on rejette
           if (dist > 4.5) {
             valid = true;
           }
@@ -390,9 +327,7 @@ function initScene() {
 
         if (valid) {
           clone.position.set(x, -2.0, z);
-          // Rotation aléatoire
           clone.rotation.y = Math.random() * Math.PI * 2;
-          // Scale aléatoire
           const s = scale * (0.8 + Math.random() * 0.4);
           clone.scale.set(s, s, s);
           root?.add(clone);
@@ -401,28 +336,32 @@ function initScene() {
     });
   };
 
-  // Ajouter des arbres et rochers autour
-  loadDecor(treeUrl, 25, 12, 45, 1.5);
-  loadDecor(rockUrl, 15, 8, 30, 1.0);
+  // Plus d'arbres et plus loin
+  loadDecor(treeUrl, 120, 20, 90, 1.5);
+  loadDecor(tree2Url, 100, 22, 85, 1.6);
+  loadDecor(tree3Url, 100, 25, 95, 1.4);
+  loadDecor(tree4Url, 100, 28, 90, 1.5);
+  loadDecor(tree5Url, 80, 30, 95, 1.7);
+  loadDecor(tree6Url, 80, 32, 90, 1.3);
+  
+  // Rochers et buissons
+  loadDecor(rockUrl, 50, 15, 60, 1.0);
+  loadDecor(rock2Url, 50, 18, 65, 1.2);
+  loadDecor(bushUrl, 150, 12, 55, 0.8);
 
   loader.load(
     campfireUrl,
     (gltf: GLTF) => {
       const model = gltf.scene;
-
-      // Centrage et mise à l'échelle automatiques
       const box = new THREE.Box3().setFromObject(model);
       const size = box.getSize(new THREE.Vector3());
 
-      // 1. Mise à l'échelle
       const maxDim = Math.max(size.x, size.z);
       const targetSize = 40;
       const scaleFactor = targetSize / maxDim;
       
       model.scale.set(scaleFactor, scaleFactor, scaleFactor);
-
-      // 2. Recentrage intelligent
-      model.updateMatrixWorld(true); // Appliquer le scale
+      model.updateMatrixWorld(true);
       const finalBox = new THREE.Box3().setFromObject(model);
       
       let targetCenter = finalBox.getCenter(new THREE.Vector3());
@@ -430,16 +369,12 @@ function initScene() {
       const candidates: THREE.Object3D[] = [];
       model.traverse((child) => candidates.push(child));
 
-      // On cherche un nœud pertinent pour le centrage (Logs, Campfire, Fire...)
       for (const child of candidates) {
          const n = child.name.toLowerCase();
-         // On privilégie les objets qui semblent être le "cœur" du feu de camp
          if (!bestNode && (n.includes("logs") || n.includes("campfire") || n.includes("wood"))) {
             bestNode = child;
          }
       }
-      
-      // Si on n'a pas trouvé de bois/campfire, on cherche le feu/flamme
       if (!bestNode) {
           for (const child of candidates) {
              const n = child.name.toLowerCase();
@@ -450,37 +385,21 @@ function initScene() {
       }
 
       if (bestNode) {
-          console.log("Recentrage sur l'objet :", bestNode.name);
           const b = new THREE.Box3().setFromObject(bestNode);
           targetCenter = b.getCenter(new THREE.Vector3());
-      } else {
-          console.log("Aucun objet spécifique trouvé, centrage global.");
       }
 
-      // Application du décalage
-      // On veut que targetCenter aille en 0,0,0
-      // model.position += (0,0,0) - targetCenter
       model.position.x -= targetCenter.x;
       model.position.z -= targetCenter.z;
-      
-      // 3. Alignement vertical (bas du modèle à -1.0)
-       // On utilise la boite globale pour le sol
-       const finalMinY = finalBox.min.y;
-      
-      // On veut que finalMinY aille à -1.0
-      // Actuellement le bas est à finalMinY. 
-      // Si on fait model.position.y -= finalMinY, le bas est à 0.
-      // Puis on met à -1.0.
+      const finalMinY = finalBox.min.y;
       model.position.y -= finalMinY; 
-      model.position.y -= 2.0; // On descend encore un peu plus le sol pour que la caméra soit plus "haute" relativement 
+      model.position.y -= 2.0;
       
-      // 4. Gestion des animations
       if (gltf.animations && gltf.animations.length > 0) {
         mixer = new THREE.AnimationMixer(model);
         gltf.animations.forEach((clip) => {
           mixer!.clipAction(clip).play();
         });
-        console.log("Animations trouvées et lancées :", gltf.animations.length);
       }
 
       root!.add(model);
@@ -491,47 +410,17 @@ function initScene() {
     }
   );
 
-  // Carousel
-  carousel = new THREE.Group();
-  root.add(carousel);
-
-  // Placement des objets
-  const radius = 3.4;
-  const step = (Math.PI * 2) / items.length;
-
-  items.forEach((it, i) => {
-    const angle = i * step;
-
-    const obj = makeItemMesh(it.kind);
-    obj.position.set(Math.sin(angle) * radius, -0.55, Math.cos(angle) * radius);
-    obj.lookAt(0, -0.55, 0);
-
-    // Important : tag pour raycast
-    obj.traverse((child) => {
-      if ((child as THREE.Mesh).isMesh) {
-        clickable.push({ mesh: child, item: it, index: i });
-      }
-    });
-
-    carousel!.add(obj);
-  });
-
-  // rotation initiale centrée
-  setTargetToIndex(props.activeIndex);
-  carousel.rotation.y = targetRotationY;
-
   resize();
   window.addEventListener("resize", resize);
+
+  // Position initiale
+  moveCameraTo(props.activeIndex);
 
   animate();
 }
 
 function animate() {
-  if (!renderer || !scene || !camera || !carousel) return;
-
-  // rotation douce vers la cible (centrage)
-  const dy = targetRotationY - carousel.rotation.y;
-  carousel.rotation.y += dy * ROTATE_SPEED;
+  if (!renderer || !scene || !camera) return;
 
   controls?.update();
 
@@ -547,9 +436,6 @@ function animate() {
 function cleanup() {
   cancelAnimationFrame(raf);
   window.removeEventListener("resize", resize);
-
-  clickable.splice(0, clickable.length);
-
   renderer?.dispose();
   controls?.dispose();
   renderer = null;
@@ -557,44 +443,14 @@ function cleanup() {
   camera = null;
   controls = null;
   root = null;
-  carousel = null;
-  raycaster = null;
 }
 
-/* ===== Interactions souris ===== */
-
-function onPointerMove(e: PointerEvent) {
-  if (!wrap.value) return;
-  const rect = wrap.value.getBoundingClientRect();
-  pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
-  pointer.y = -(((e.clientY - rect.top) / rect.height) * 2 - 1);
-}
-
-function onClick() {
-  if (!raycaster || !camera || !scene) return;
-
-  raycaster.setFromCamera(pointer, camera);
-  const intersects = raycaster.intersectObjects(clickable.map((c) => c.mesh), true);
-
-  if (intersects.length === 0) return;
-
-  const hit = intersects[0].object;
-  const found = clickable.find((c) => c.mesh === hit || c.mesh.uuid === hit.uuid);
-
-  if (!found) return;
-
-  showTip.value = false;
-  emit("select-index", found.index);
-  emit("navigate", found.item.route);
-}
-
-/* ===== Réagir aux flèches (activeIndex) ===== */
 watch(
   () => props.activeIndex,
   (idx) => {
-    if (!carousel) return;
-    showTip.value = false;
-    setTargetToIndex(idx);
+    // Affiche le conseil seulement si aucun objet n'est sélectionné
+    showTip.value = (idx === -1);
+    moveCameraTo(idx);
   }
 );
 

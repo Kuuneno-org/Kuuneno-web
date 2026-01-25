@@ -1,7 +1,6 @@
 <template>
   <div class="night">
     <canvas ref="c" class="stars" />
-    <div class="moon" />
     <div class="vignette" />
   </div>
 </template>
@@ -106,18 +105,6 @@ onBeforeUnmount(() => {
   inset: 0;
 }
 
-.moon {
-  position: absolute;
-  top: 80px;
-  right: 80px;
-  width: 120px;
-  height: 120px;
-  border-radius: 999px;
-  background: radial-gradient(circle at 35% 35%, #ffffff 0%, #eef2ff 60%, #dfe6ff 100%);
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.10), 0 0 90px rgba(255, 255, 255, 0.35);
-  opacity: 0.95;
-  filter: blur(0.2px);
-}
 
 .vignette {
   position: absolute;

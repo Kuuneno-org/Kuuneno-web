@@ -16,24 +16,39 @@ export const useHomeControls = defineStore("homeControls", {
       { kind: "book", label: "Lore", route: "/lore" },
       { kind: "gamepad", label: "Mini-jeu", route: "/mini-jeu" },
     ] as HomeNavItem[],
-    activeIndex: 0,
+    activeIndex: -1,
   }),
   getters: {
-    activeItem(state): HomeNavItem {
-      return state.items[state.activeIndex] ?? state.items[0];
+    activeItem(state): HomeNavItem | { label: string; kind?: string; route?: string } {
+      if (state.activeIndex < 0 || state.activeIndex >= state.items.length) {
+        return { label: "--" };
+      }
+      return state.items[state.activeIndex];
     },
   },
   actions: {
     next() {
       if (this.items.length === 0) return;
-      this.activeIndex = (this.activeIndex + 1) % this.items.length;
+      if (this.activeIndex === -1) {
+        this.activeIndex = 0;
+      } else {
+        this.activeIndex = (this.activeIndex + 1) % this.items.length;
+      }
     },
     prev() {
       if (this.items.length === 0) return;
-      this.activeIndex = (this.activeIndex - 1 + this.items.length) % this.items.length;
+      if (this.activeIndex === -1) {
+        this.activeIndex = this.items.length - 1;
+      } else {
+        this.activeIndex = (this.activeIndex - 1 + this.items.length) % this.items.length;
+      }
     },
     setIndex(i: number) {
       if (this.items.length === 0) return;
+      if (i === -1) {
+        this.activeIndex = -1;
+        return;
+      }
       const n = this.items.length;
       this.activeIndex = ((i % n) + n) % n;
     },
