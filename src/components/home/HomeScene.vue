@@ -1,20 +1,8 @@
 <template>
   <div ref="wrap" class="wrap">
-    <transition name="fade">
-      <video
-        v-if="showVideo"
-        ref="videoEl"
-        class="book-video"
-        muted
-        playsinline
-        crossorigin="anonymous"
-      >
-        <source :src="videoUrl" type="video/mp4" />
-      </video>
-    </transition>
     <canvas ref="canvas" class="canvas"></canvas>
 
-    <div class="tip" v-if="showTip">
+    <div class="tip" v-if="showTip && isGameStarted">
       Utilisez les flèches pour naviguer
     </div>
 
@@ -24,19 +12,19 @@
       :camera="camera"
     />
 
-    <MagicBook 
-      v-if="isSceneReady && scene && camera" 
-      :scene="scene" 
+    <MagicBook
+      v-if="isSceneReady && scene && camera"
+      :scene="scene"
       :active="isActiveItemLore"
     />
 
     <MagicCredits
-      v-if="isSceneReady && scene && camera" 
-      :scene="scene" 
+      v-if="isSceneReady && scene && camera"
+      :scene="scene"
     />
 
     <MagicGamepad
-      v-if="isSceneReady && scene && camera" 
+      v-if="isSceneReady && scene && camera"
       :scene="scene" 
     />
 
@@ -60,6 +48,17 @@
       :scene="scene"
     />
 
+    <KuunenoSample
+      v-if="isSceneReady && scene"
+      :scene="scene"
+    />
+
+    <RoundTable
+      v-if="isSceneReady && scene"
+      :scene="scene"
+    />
+
+
   </div>
 </template>
 
@@ -69,16 +68,15 @@ import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import gsap from "gsap";
-import GhostMask from "../sketchfab/GhostMask.vue";
-import MagicBook from "../sketchfab/MagicBook.vue";
-import MagicCredits from "../sketchfab/MagicCredits.vue";
-import MagicGamepad from "../sketchfab/MagicGamepad.vue";
-import MagicMoon from "../sketchfab/MagicMoon.vue";
-import Drone from "../sketchfab/FloatingDrone.vue";
-import KuunenoFox from "../sketchfab/KuunenoFox.vue";
-import PikminEvol from "../sketchfab/PikminEvol.vue";
+import GhostMask from "../3D_Components/GhostMask.vue";
+import MagicBook from "../3D_Components/MagicBook.vue";
+import MagicCredits from "../3D_Components/MagicCredits.vue";
+import MagicGamepad from "../3D_Components/MagicGamepad.vue";
+import MagicMoon from "../3D_Components/MagicMoon.vue";
+import Drone from "../3D_Components/FloatingDrone.vue";
+import KuunenoFox from "../3D_Components/KuunenoFox.vue";
+import PikminEvol from "../3D_Components/PikminEvol.vue";
 import type { HomeNavItem } from "@/stores/homeControls";
-import videoUrl from "@/assets/Livre.mp4";
 import campfireUrl from "@/assets/3D/Ambience camping/camping_buscraft_ambience/scene.gltf?url";
 import treeUrl from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_4_A_Color1.gltf?url";
 import tree2Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_1_A_Color1.gltf?url";
@@ -89,15 +87,19 @@ import tree6Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf
 import rockUrl from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Rock_2_A_Color1.gltf?url";
 import rock2Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Rock_1_A_Color1.gltf?url";
 import bushUrl from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Bush_1_A_Color1.gltf?url";
+import KuunenoSample from "../3D_Components/KuunenoSample.vue";
+import RoundTable from "../3D_Components/RoundTable.vue";
 
 const props = defineProps<{
   activeIndex: number;
+  isGameStarted: boolean;
 }>();
 
-// const emit = defineEmits<{
-//   (e: "select-index", i: number): void;
-//   (e: "navigate", route: string): void;
-// }>();
+const emit = defineEmits<{
+  (e: "select-index", i: number): void;
+  (e: "navigate", route: string): void;
+  (e: "scene-entered"): void;
+}>();
 
 const wrap = ref<HTMLDivElement | null>(null);
 const canvas = ref<HTMLCanvasElement | null>(null);
@@ -200,7 +202,7 @@ function resize() {
   camera.updateProjectionMatrix();
 }
 
-function moveCameraTo(index: number) {
+function moveCameraTo(index: number, duration: number = 1.5, ease: string = "power2.inOut", onComplete?: () => void) {
   if (!camera || !controls) return;
 
   const view = (index >= 0 && index < cameraViews.length) 
@@ -212,8 +214,9 @@ function moveCameraTo(index: number) {
     x: view.pos.x,
     y: view.pos.y,
     z: view.pos.z,
-    duration: 1.5,
-    ease: "power2.inOut"
+    duration: duration,
+    ease: ease,
+    onComplete: onComplete // On appelle le callback à la fin de l'animation de position
   });
 
   // Animation de la cible des contrôles
@@ -221,8 +224,8 @@ function moveCameraTo(index: number) {
     x: view.target.x,
     y: view.target.y,
     z: view.target.z,
-    duration: 1.5,
-    ease: "power2.inOut",
+    duration: duration,
+    ease: ease,
     onUpdate: () => {
       controls?.update();
     }
@@ -259,6 +262,16 @@ function initScene() {
   controls.screenSpacePanning = false;
 
   controls.target.copy(defaultView.target);
+
+  if (!props.isGameStarted) {
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.5;
+    controls.enableZoom = false;
+    controls.enablePan = false;
+    controls.enableRotate = false;
+    // Position éloignée pour le menu
+    camera.position.set(35, 15, 35);
+  }
 
   // Lumières (bleu nuit + feu orangé)
   scene.add(new THREE.AmbientLight(0xffffff, 0.35));
@@ -420,10 +433,55 @@ function initScene() {
   window.addEventListener("resize", resize);
 
   // Position initiale
-  moveCameraTo(props.activeIndex);
+  if (props.isGameStarted) {
+    moveCameraTo(props.activeIndex);
+  }
 
   animate();
 }
+
+watch(() => props.isGameStarted, (started) => {
+  if (controls && camera) {
+    if (started) {
+      controls.autoRotate = false;
+      controls.enableZoom = true;
+      controls.enablePan = false; // On garde false car screenSpacePanning est false, mais on veut peut-être autoriser la navigation normale définie par OrbitControls
+      
+      // On réactive les interactions normales
+      controls.enableRotate = true;
+      
+      // Animation vers la vue par défaut ou l'item actif
+      // Transition plus lente et fluide pour l'intro (4 secondes)
+      moveCameraTo(props.activeIndex, 4.0, "power3.inOut", () => {
+        emit("scene-entered");
+      });
+    } else {
+      // Retour à l'état "Menu"
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = 0.5;
+      controls.enableZoom = false;
+      controls.enablePan = false;
+      controls.enableRotate = false;
+
+      // Animation vers la position de menu (éloignée)
+      gsap.to(camera.position, {
+        x: 35,
+        y: 15,
+        z: 35,
+        duration: 2.5,
+        ease: "power2.inOut"
+      });
+
+      gsap.to(controls.target, {
+        x: 0,
+        y: 1,
+        z: 0,
+        duration: 2.5,
+        ease: "power2.inOut"
+      });
+    }
+  }
+});
 
 function animate() {
   if (!renderer || !scene || !camera) return;
@@ -475,20 +533,6 @@ onBeforeUnmount(() => cleanup());
   width: 100%;
   height: 100%;
   display: block;
-}
-
-.tip {
-  position: absolute;
-  left: 50%;
-  top: 52%;
-  transform: translate(-50%, -50%);
-  padding: 10px 14px;
-  border-radius: 999px;
-  background: rgba(8, 15, 35, 0.55);
-  border: 1px solid rgba(255,255,255,0.12);
-  color: rgba(255,255,255,0.90);
-  font-size: 14px;
-  pointer-events: none;
 }
 
 .book-video {
