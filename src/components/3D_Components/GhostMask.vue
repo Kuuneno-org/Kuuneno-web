@@ -19,7 +19,8 @@ let rafId: number = 0;
 let rotationInterval: ReturnType<typeof setInterval> | null = null;
 const clock = new THREE.Clock();
 
-watch(() => props.active, (isActive) => {
+watch
+(() => props.active, (isActive) => {
   if (isActive && model) {
     // Attendre que la caméra arrive (environ 1.5s)
     setTimeout(() => {
