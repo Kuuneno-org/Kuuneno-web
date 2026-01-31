@@ -24,7 +24,7 @@ onMounted(() => {
     // x: 10  -> légèrement à droite du centre du feu de camp
     // y: 0.5 -> juste au-dessus du niveau de la Terre
     // z: 5  -> légèrement vers l'avant du centre du feu de camp
-    model.position.set(0, 2.1, 4);
+    model.position.set(0, 1.7, 4);
 
     // Rotation : posé au sol ou sur un sac de couchage
     // y: 0 -> face vers le haut

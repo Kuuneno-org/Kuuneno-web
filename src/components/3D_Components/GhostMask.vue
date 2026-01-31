@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, watch } from 'vue';
+import { onMounted, onBeforeUnmount } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import gsap from 'gsap';
 import ghostMaskUrl from '@/assets/3D/Objects/ghost-mask.glb?url';
 import plumbobUrl from '@/assets/3D/Objects/plumbob.glb?url';
 
@@ -16,23 +15,7 @@ let model: THREE.Group | null = null;
 let plumbobModel: THREE.Group | null = null;
 let mixer: THREE.AnimationMixer | null = null;
 let rafId: number = 0;
-let rotationInterval: ReturnType<typeof setInterval> | null = null;
 const clock = new THREE.Clock();
-
-watch
-(() => props.active, (isActive) => {
-  if (isActive && model) {
-    // Attendre que la caméra arrive (environ 1.5s)
-    setTimeout(() => {
-      // Rotation de 3 tours (3 * 360°)
-      gsap.to(model!.rotation, {
-        y: model!.rotation.y + Math.PI * 2 * 3,
-        duration: 3, // 1 tour par seconde
-        ease: "power2.inOut"
-      });
-    }, 1500);
-  }
-});
 
 onMounted(() => {
   const loader = new GLTFLoader();
@@ -92,18 +75,6 @@ onMounted(() => {
 
     // Démarrage de la boucle d'animation locale
     animate();
-
-    // Rotation périodique toutes les 20s
-    rotationInterval = setInterval(() => {
-      if (model) {
-        // Rotation rapide sur 360 degrés (2 * PI)
-        gsap.to(model.rotation, {
-          y: model.rotation.y + Math.PI * 2,
-          duration: 1, // Rapide (1 seconde)
-          ease: "power2.inOut"
-        });
-      }
-    }, 20000);
   });
 });
 
@@ -124,7 +95,6 @@ function animate() {
 }
 
 onBeforeUnmount(() => {
-  if (rotationInterval) clearInterval(rotationInterval);
   cancelAnimationFrame(rafId);
   if (model) {
     props.scene.remove(model);
