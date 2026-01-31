@@ -33,11 +33,6 @@
       :scene="scene" 
     />
 
-    <Drone
-      v-if="isSceneReady && scene"
-      :scene="scene"
-    />
-
     <PikminEvol
       v-if="isSceneReady && scene"
       :scene="scene"
@@ -73,7 +68,6 @@ import MagicBook from "../3D_Components/MagicBook.vue";
 import MagicCredits from "../3D_Components/MagicCredits.vue";
 import MagicGamepad from "../3D_Components/MagicGamepad.vue";
 import MagicMoon from "../3D_Components/MagicMoon.vue";
-import Drone from "../3D_Components/FloatingDrone.vue";
 import KuunenoFox from "../3D_Components/KuunenoFox.vue";
 import PikminEvol from "../3D_Components/PikminEvol.vue";
 import type { HomeNavItem } from "@/stores/homeControls";
@@ -143,8 +137,8 @@ const cameraViews = [
     // Position calculée pour être "en face" de l'autel (qui est à -9, 0.9, 6)
     // On se place entre le feu (0,0,0) et l'autel, mais assez proche de l'autel pour bien le voir
     // L'autel est loin (-9, 6), on s'approche
-    pos: new THREE.Vector3(-6, 6.0, 4),
-    target: new THREE.Vector3(-9, 1.2, 6)
+    pos: new THREE.Vector3(-4.8, 3.0, 3.2),
+    target: new THREE.Vector3(-9, 2.0, 6)
   },
   // Book
   {
@@ -160,7 +154,7 @@ const cameraViews = [
 
 // Vue par défaut (Feu de camp)
 const defaultView = {
-  pos: new THREE.Vector3(15, 5, 15),
+  pos: new THREE.Vector3(15, 3.5, 15),
   target: new THREE.Vector3(0, 1, 0)
 };
 
