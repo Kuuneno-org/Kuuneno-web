@@ -4,6 +4,7 @@ const routes: RouteRecordRaw[] = [
   { path: "/", name: "home", component: () => import("@/pages/HomePage.vue") },
   { path: "/histoire", name: "story", component: () => import("@/pages/StoryPage.vue") },
   { path: "/credits", name: "credits", component: () => import("@/pages/CreditsPage.vue") },
+  { path: "/tribu", name: "tribe", component: () => import("@/pages/TribePage.vue") },
   { path: "/lore", name: "lore", component: () => import("@/pages/StubPage.vue") },
   { path: "/mini-jeu", name: "minigame", component: () => import("@/pages/StubPage.vue") },
   { path: "/:pathMatch(.*)*", redirect: "/" },

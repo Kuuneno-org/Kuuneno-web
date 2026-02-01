@@ -143,6 +143,7 @@ defineEmits(['start', 'login-facebook', 'help']);
   color: white;
   font-weight: 500;
   font-size: 0.9rem;
+  font-family: "Montserrat", sans-serif;
   cursor: pointer;
   transition: transform 0.2s, background 0.2s;
 }

@@ -92,7 +92,7 @@ import HomeScene from "@/components/home/HomeScene.vue";
 import StartScreen from "@/components/ui/StartScreen.vue";
 import { useHomeControls } from "@/stores/homeControls";
 import { useAudio } from "@/composables/useAudio";
-import bgMusicUrl from "@/assets/musics/survival-music.mp3";
+import bgMusicUrl from "@/assets/musics/game-background-music.mp3";
 import browseArrowsUrl from "@/assets/browse_arrows.png";
 
 const router = useRouter();
