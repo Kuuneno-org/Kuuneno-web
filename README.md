@@ -74,8 +74,8 @@ Nous avons mis en place un script utilitaire pour garantir la qualité du code a
 | `npm run dev` | Lance le serveur de développement. |
 | `npm run build` | Compile l'application pour la production. |
 | `npm run preview` | Prévisualise la version de production localement. |
-| `npm run nrv` | **Nickel Rendez-Vous** : Lance Lint + Type Check + Tests Unitaires. |
-| `npm run nrv -- --fix` | Corrige automatiquement le linting et lance les vérifications. |
+| `npm run validate` | Lance Lint + Type Check + Tests Unitaires. |
+| `npm run validate -- --fix` | Corrige automatiquement le linting et lance les vérifications. |
 | `npm run test:e2e` | Lance les tests End-to-End avec Playwright. |
 
 ## 📁 Structure du Projet
@@ -97,30 +97,6 @@ kuuneno-web/
 ├── tests/              # Tests E2E Playwright
 └── vite.config.ts      # Configuration Vite
 ```
-
-## 🔁 Workflow Git & Contribution
-
-Nous suivons un workflow collaboratif strict pour maintenir la stabilité de la branche principale.
-
-1.  **Branches :**
-    - `main` : Branche de production stable. Ne jamais commit directement dessus.
-    - `feat/nom-feature` : Pour les nouvelles fonctionnalités.
-    - `fix/nom-bug` : Pour les corrections de bugs.
-
-2.  **Pull Requests (PR) :**
-    - Ouvrez une PR vers `main` lorsque votre fonctionnalité est terminée.
-    - La CI (GitHub Actions) lancera automatiquement les tests.
-    - Une revue de code par un autre membre de l'équipe est requise avant le merge.
-
-3.  **Avant de push :**
-    Assurez-vous toujours que votre code est propre en exécutant :
-    ```bash
-    npm run nrv
-    ```
-
-## 📄 Licence
-
-Ce projet est sous licence **MIT**. Voir le fichier [LICENSE](LICENSE) pour plus de détails.
 
 ---
 
