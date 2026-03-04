@@ -10,7 +10,8 @@
     <div class="hud" v-show="isGameStarted">
       <div class="hud-card">
         <h1>Bienvenue sur Kuuneno</h1>
-        <p>Choisissez un objet autour du feu.</p>
+        <p class="max-w-sm">Utilisez les flèches directionnelles ci-dessous pour vous naviguer entre les objets.</p>
+
       </div>
     </div>
 
@@ -27,7 +28,6 @@
         :is-game-started="isGameStarted"
         @select-index="onSelectIndex"
         @navigate="onNavigate"
-        @scene-entered="onSceneEntered"
       />
     </div>
 
@@ -37,7 +37,7 @@
         <button class="nav-btn nav-arrow" type="button" @click="prev" aria-label="Précédent">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-left-icon lucide-arrow-left"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
         </button>
-        
+
         <button class="nav-btn nav-recenter" type="button" @click="recenter" aria-label="Recentrer" :disabled="controls.activeIndex === -1">
           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           <span>Recentrer</span>
@@ -70,17 +70,6 @@
         </div>
       </div>
     </transition>
-
-    <!-- Tutorial Modal -->
-    <transition name="fade">
-      <div class="tutorial-modal-overlay" v-if="showTutorialModal" @click.self="closeTutorialModal">
-        <div class="tutorial-modal-content">
-          <img :src="browseArrowsUrl" alt="Navigation Tutorial" class="tutorial-img" />
-          <p class="tutorial-text">Utilisez les flèches directionnelles situées en bas à gauche de l'écran pour naviguer entre les objets.</p>
-          <button class="btn-tutorial-close" @click="closeTutorialModal">C'est parti !</button>
-        </div>
-      </div>
-    </transition>
   </section>
 </template>
 
@@ -93,12 +82,10 @@ import StartScreen from "@/components/ui/StartScreen.vue";
 import { useHomeControls } from "@/stores/homeControls";
 import { useAudio } from "@/composables/useAudio";
 import bgMusicUrl from "@/assets/musics/game-background-music.mp3";
-import browseArrowsUrl from "@/assets/browse_arrows.png";
 
 const router = useRouter();
 const controls = useHomeControls();
 const isGameStarted = ref(false);
-const showTutorialModal = ref(false);
 
 const itemDescriptions: Record<string, string> = {
   "mask": "Plongez dans les mystères de la tribu Kuuneno à travers une expérience narrative unique.",
@@ -141,18 +128,9 @@ function onStartGame() {
   }
 }
 
-function onSceneEntered() {
-  showTutorialModal.value = true;
-}
-
 function returnToHome() {
   isGameStarted.value = false;
   controls.setIndex(-1);
-  showTutorialModal.value = false;
-}
-
-function closeTutorialModal() {
-  showTutorialModal.value = false;
 }
 
 function onLoginFacebook() {
