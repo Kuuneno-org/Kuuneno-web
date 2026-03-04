@@ -32,7 +32,7 @@
       </div>
 
       <div class="footer-info">
-        <span class="copyright">© 2026 Kuunenos. All rights reserved.</span>
+        <span class="copyright">© 2026 Kuunenos. Tous droits réservés.</span>
         <span class="version">v1.0.0</span>
       </div>
     </div>

@@ -2,7 +2,7 @@
 import { onMounted, onBeforeUnmount } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import gamepadUrl from '@/assets/3D/Objects/model.glb?url';
+import kuunenoModel from '@/assets/3D/Objects/cerf.glb?url';
 import plumbobUrl from '@/assets/3D/Objects/plumbob.glb?url';
 
 const props = defineProps<{
@@ -17,7 +17,7 @@ const clock = new THREE.Clock();
 
 onMounted(() => {
   const loader = new GLTFLoader();
-  loader.load(gamepadUrl, (gltf) => {
+  loader.load(kuunenoModel, (gltf) => {
     model = gltf.scene;
 
     // Configuration du modèle
