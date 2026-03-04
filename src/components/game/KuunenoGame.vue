@@ -34,7 +34,7 @@ onMounted(async () => {
     await win.cheerpjInit();
 
     // On crée l'affichage graphique AVANT de lancer le JAR
-    // On cible l'ID de notre conteneur
+    // On cible l'ID de notre conteneur cheerpj-container
     win.cheerpjCreateDisplay(props.width || 800, props.height || 600, document.getElementById('cheerpj-container'));
 
     console.log(`Lancement du JAR : ${props.jarPath}`);
@@ -43,7 +43,7 @@ onMounted(async () => {
     // On n'attend PAS la fin de l'exécution car c'est une boucle infinie (le jeu)
     win.cheerpjRunJar(props.jarPath, "");
 
-    // On peut masquer le loader après un court délai pour laisser le temps à l'UI Swing de s'initialiser
+    // On masque le loader après un court délai pour laisser le temps à l'UI Swing de s'initialiser
     setTimeout(() => {
       loading.value = false;
     }, 1500);
@@ -63,13 +63,12 @@ onMounted(async () => {
       <p>Démarrage du moteur Java en WebAssembly...</p>
     </div>
 
-    <!-- Feedback d'erreur -->
     <div v-if="error" class="status-message error">
       <p>⚠️ {{ error }}</p>
     </div>
 
-    <!-- CheerpJ crée généralement son propre affichage en overlay ou dans le DOM.
-         Nous prévoyons ce conteneur pour gérer l'espace. -->
+    <!-- CheerpJ va créer son l'affichage en overlay ou dans le DOM.
+         On prévoie ce conteneur pour gérer l'espace. -->
     <div id="cheerpj-container" :style="{ width: width + 'px', height: height + 'px' }"></div>
   </div>
 </template>
