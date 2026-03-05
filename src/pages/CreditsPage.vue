@@ -96,8 +96,8 @@
                     <div class="credit-group">
                         <h3>Développement</h3>
                         <ul>
-                            <li>Patrick Namegni - Lead Developer</li>
-                            <li>Équipe YDAYS - Contributors</li>
+                            <li>Patrick Namegni - Développeur Principal</li>
+                            <li>Équipe YDAYS - Contributeurs</li>
                         </ul>
                     </div>
                     <div class="credit-group">
@@ -485,15 +485,15 @@ onMounted(() => {
     left: 0;
     width: 0%;
     height: 100%;
-    background: #fff;
+    background: #f59e0b;
     z-index: 1;
     transition: width 1.8s cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .action-btn:hover {
-    border-color: #fff;
+    border-color: #f59e0b;
     transform: translateY(-2px);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 10px 40px rgba(245, 158, 11, 0.2);
 }
 
 .action-btn:hover .btn-ring {

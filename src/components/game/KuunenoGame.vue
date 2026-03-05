@@ -19,7 +19,13 @@ const props = defineProps<{
 
 const loading = ref(true);
 const error = ref<string | null>(null);
-const win = window as any;
+interface CheerpJWindow extends Window {
+  cheerpjInit: () => Promise<void>;
+  cheerpjCreateDisplay: (width: number, height: number, container: HTMLElement | null) => void;
+  cheerpjRunJar: (jarPath: string, args: string) => void;
+}
+
+const win = window as unknown as CheerpJWindow;
 
 onMounted(async () => {
   try {
@@ -47,9 +53,9 @@ onMounted(async () => {
     setTimeout(() => {
       loading.value = false;
     }, 1500);
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error("Erreur CheerpJ:", e);
-    error.value = e.message || "Erreur lors du lancement du jeu Java";
+    error.value = (e instanceof Error ? e.message : String(e)) || "Erreur lors du lancement du jeu Java";
     loading.value = false;
   }
 });
