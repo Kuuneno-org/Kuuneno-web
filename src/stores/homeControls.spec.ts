@@ -9,12 +9,27 @@ describe("Home Controls Store", () => {
 
   it("should initialize with default values", () => {
     const store = useHomeControls();
-    expect(store.activeIndex).toBe(0);
+    expect(store.activeIndex).toBe(-1);
     expect(store.items.length).toBeGreaterThan(0);
+  });
+
+  it("should navigate to first item when next is called from initial state", () => {
+    const store = useHomeControls();
+    store.activeIndex = -1;
+    store.next();
+    expect(store.activeIndex).toBe(0);
+  });
+
+  it("should navigate to last item when prev is called from initial state", () => {
+    const store = useHomeControls();
+    store.activeIndex = -1;
+    store.prev();
+    expect(store.activeIndex).toBe(store.items.length - 1);
   });
 
   it("should navigate to next item correctly", () => {
     const store = useHomeControls();
+    store.activeIndex = 0;
     store.next();
     expect(store.activeIndex).toBe(1);
   });
