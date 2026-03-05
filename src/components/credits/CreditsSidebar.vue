@@ -213,9 +213,9 @@ watch(() => props.isOpen, (isOpen) => {
 }
 
 .social-link:hover {
-    background: rgba(255, 255, 255, 0.2);
-    border-color: rgba(255, 255, 255, 0.8);
-    color: #fff;
+    background: rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.8);
+    color: #f59e0b;
     transform: translateY(-2px);
 }
 

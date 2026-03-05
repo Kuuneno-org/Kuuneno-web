@@ -9,7 +9,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "type-check": "vue-tsc --noEmit",
-    "validate": "./scripts/nrv.sh",
+    "validate": "vue-tsc --noEmit && eslint .",
     "test": "vitest",
     "test:e2e": "playwright test",
     "preview": "vite preview"
