@@ -58,7 +58,7 @@
             }"
           />
         </div>
-        <p class="absolute bottom-8 left-1/2 -translate-x-1/2 font-display text-xs tracking-[0.5em] text-glow text-glow uppercase">
+        <p class="absolute bottom-8 left-1/2 -translate-x-1/2 font-display text-xs tracking-[0.5em] text-glow uppercase">
           GLITCH MODE ACTIVATED
         </p>
       </div>

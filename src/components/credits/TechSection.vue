@@ -9,7 +9,7 @@
       <div class="text-center mb-16">
         <h2 ref="titleRef" class="font-display text-2xl md:text-4xl font-bold tracking-wider mb-4 opacity-0">
           <span class="text-light">FORGÉ </span>
-          <span class="text-glow text-glow">AVEC</span>
+          <span class="text-glow">AVEC</span>
         </h2>
         <p ref="descRef" class="font-body text-muted/70 max-w-md mx-auto leading-relaxed opacity-0">
           Les technologies et outils qui propulsent ce monde.

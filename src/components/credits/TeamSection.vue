@@ -11,7 +11,7 @@
         class="font-display text-2xl md:text-4xl font-bold tracking-wider mb-4 opacity-0"
       >
         <span class="text-light">ÉQUIPE </span>
-        <span class="text-glow text-glow">PRINCIPALE</span>
+        <span class="text-glow">PRINCIPALE</span>
       </h2>
       <p ref="descRef" class="font-body text-muted/70 max-w-md mx-auto leading-relaxed opacity-0">
         Huit visionnaires qui ont mis leur âme à construire ce monde.
