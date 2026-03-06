@@ -92,14 +92,14 @@ const scrollDotRef = ref<HTMLElement | null>(null)
 const titleRef = ref<HTMLElement | null>(null)
 const letterRefs = ref<HTMLElement[]>([])
 
-const title = 'Une Équipe, Une Vision, Un Monde de Kuuneno'
+const title = 'LES ESPRITS DERRIÈRE KUUNENOS'
 const titleLetters = computed(() => title.split(''))
 
 const highlightIndices = computed(() => {
   const indices: number[] = []
-  const teamStart = title.indexOf('Une Équipe')
-  const worldStart = title.indexOf('Un Monde')
-  for (let i = teamStart; i < teamStart + 10; i++) indices.push(i)
+  const espritsStart = title.indexOf('LES ESPRITS')
+  const worldStart = title.indexOf('KUUNENOS')
+  for (let i = espritsStart; i < espritsStart + 11; i++) indices.push(i)
   for (let i = worldStart; i < worldStart + 8; i++) indices.push(i)
   return indices
 })

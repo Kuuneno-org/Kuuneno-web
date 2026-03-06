@@ -6,3 +6,9 @@ declare module "*.vue" {
   const component: DefineComponent<{}, {}, any>;
   export default component;
 }
+
+declare module '*.gltf';
+declare module '*.glb';
+declare module '*.gltf?url';
+declare module '*.glb?url';
+

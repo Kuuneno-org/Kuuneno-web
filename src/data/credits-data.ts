@@ -159,7 +159,7 @@ export const technologies = {
 };
 
 export const specialThanks = [
-  "Communauté Open Source",
+  "Campus YNOV Strasbourg",
   "Nos Premiers Testeurs",
   "Machines à Café",
   "Stack Overflow",

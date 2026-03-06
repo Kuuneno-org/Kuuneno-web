@@ -53,6 +53,11 @@
       :scene="scene"
     />
 
+    <!-- <SampleAnim
+      v-if="isSceneReady && scene"
+      :scene="scene"
+    /> -->
+
 
   </div>
 </template>
@@ -83,6 +88,7 @@ import rock2Url from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf
 import bushUrl from "@/assets/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Bush_1_A_Color1.gltf?url";
 import KuunenoSample from "../3D_Components/KuunenoSample.vue";
 import RoundTable from "../3D_Components/RoundTable.vue";
+// import SampleAnim from "../3D_Components/SampleAnim.vue";
 
 const props = defineProps<{
   activeIndex: number;

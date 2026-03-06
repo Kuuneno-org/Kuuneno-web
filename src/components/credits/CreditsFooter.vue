@@ -8,7 +8,7 @@
       <!-- Logo / Title -->
       <div ref="logoRef" class="mb-6 opacity-0">
         <h3 class="font-display text-xl font-bold tracking-[0.2em] text-glow text-glow-subtle">
-          NEXUS WORLDS
+          KUUNENOS
         </h3>
       </div>
 
@@ -24,7 +24,7 @@
 
       <!-- Copyright -->
       <p ref="copyrightRef" class="font-body text-xs text-muted/30 opacity-0">
-        {{ currentYear }} Nexus Worlds Studio. Tous droits réservés.
+        {{ currentYear }} KUUNENOS. Tous droits réservés.
       </p>
 
       <!-- Back to top -->

@@ -18,7 +18,7 @@
     <div class="top-controls">
       <button class="btn-menu" type="button" @click="returnToHome" aria-label="Retour au menu" v-if="isGameStarted">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        <span>Menu</span>
+        <span>Retour à l'écran d'accueil</span>
       </button>
     </div>
 
@@ -244,7 +244,7 @@ function onNavigate(route: string) {
   border-radius: 12px;
   color: rgba(255, 255, 255, 0.7);
   font-weight: 600;
-  font-size: 14px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1px;
   cursor: pointer;

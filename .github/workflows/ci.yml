@@ -23,9 +23,13 @@ jobs:
         id: install-deps
         run: npm ci
 
-      - name: Validate
+      - name: Validate type-checking
         id: validate
         run: npm run validate
+
+      - name: Run tests
+        id: test
+        run: npm run test
 
       - name: Build
         id: build
