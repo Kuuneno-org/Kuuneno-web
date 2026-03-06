@@ -2,8 +2,8 @@
 import { onMounted, onBeforeUnmount } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import creditsUrl from '@/assets/3D/Objects/altar.glb?url';
-import plumbobUrl from '@/assets/3D/Objects/plumbob.glb?url';
+const creditsUrl = '/3D/Objects/altar.glb';
+const plumbobUrl = '/3D/Objects/plumbob.glb';
 
 const props = defineProps<{
   scene: THREE.Scene;

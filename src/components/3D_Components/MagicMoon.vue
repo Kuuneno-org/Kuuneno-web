@@ -2,7 +2,7 @@
 import { onMounted, onBeforeUnmount } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import moonUrl from '@/assets/3D/Objects/moon.glb?url';
+const moonUrl = '/3D/Objects/moon.glb';
 
 const props = defineProps<{
   scene: THREE.Scene;

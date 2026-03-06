@@ -24,6 +24,12 @@ export function useAudio(url: string, opts?: { loop?: boolean; volume?: number }
     try {
       await audio.value.play();
     } catch (err) {
+      // Ignore NotAllowedError (autoplay policy)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const error = err as any;
+      if (error.name === "NotAllowedError" || error?.message?.includes("NotAllowedError")) {
+        throw err;
+      }
       console.warn("Audio play failed:", err);
       throw err;
     }

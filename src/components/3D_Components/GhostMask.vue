@@ -2,8 +2,8 @@
 import { onMounted, onBeforeUnmount } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import ghostMaskUrl from '@/assets/3D/Objects/ghost-mask.glb?url';
-import plumbobUrl from '@/assets/3D/Objects/plumbob.glb?url';
+const ghostMaskUrl = '/3D/Objects/ghost-mask.glb';
+const plumbobUrl = '/3D/Objects/plumbob.glb';
 
 const props = defineProps<{
   scene: THREE.Scene;

@@ -2,7 +2,7 @@
 import { onMounted, onBeforeUnmount } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import gamepadUrl from '@/assets/3D/Objects/pikmin_evol.glb?url';
+const gamepadUrl = '/3D/Objects/pikmin_evol.glb';
 
 const props = defineProps<{
   scene: THREE.Scene;

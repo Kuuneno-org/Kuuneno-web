@@ -2,7 +2,7 @@
 import { onMounted, onBeforeUnmount } from 'vue';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import sampleAnimUrl from '@/assets/3D/Objects/sample.glb?url';
+const sampleAnimUrl = '/3D/Objects/sample.glb';
 
 const props = defineProps<{
   scene: THREE.Scene;
