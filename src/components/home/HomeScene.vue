@@ -63,19 +63,13 @@
 </template>
 
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref, watch, computed } from "vue";
+import { onBeforeUnmount, onMounted, ref, watch, computed, defineAsyncComponent } from "vue";
 import * as THREE from "three";
 import { GLTFLoader, type GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import gsap from "gsap";
-import GhostMask from "../3D_Components/GhostMask.vue";
-import MagicBook from "../3D_Components/MagicBook.vue";
-import MagicCredits from "../3D_Components/MagicCredits.vue";
-import MagicGamepad from "../3D_Components/MagicGamepad.vue";
-import MagicMoon from "../3D_Components/MagicMoon.vue";
-import KuunenoFox from "../3D_Components/KuunenoFox.vue";
-import PikminEvol from "../3D_Components/PikminEvol.vue";
 import type { HomeNavItem } from "@/stores/homeControls";
+
 const campfireUrl = "/3D/Ambience camping/camping_buscraft_ambience/scene.gltf";
 const treeUrl = "/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_4_A_Color1.gltf";
 const tree2Url = "/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_1_A_Color1.gltf";
@@ -86,8 +80,17 @@ const tree6Url = "/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Tree_3_B_Co
 const rockUrl = "/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Rock_2_A_Color1.gltf";
 const rock2Url = "/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Rock_1_A_Color1.gltf";
 const bushUrl = "/3D/KayKit_Forest_Nature_Pack_1.0_FREE/Assets/gltf/Bush_1_A_Color1.gltf";
-import KuunenoSample from "../3D_Components/KuunenoSample.vue";
-import RoundTable from "../3D_Components/RoundTable.vue";
+
+// Lazy load des composants 3D lourds
+const GhostMask = defineAsyncComponent(() => import("../3D_Components/GhostMask.vue"));
+const MagicBook = defineAsyncComponent(() => import("../3D_Components/MagicBook.vue"));
+const MagicCredits = defineAsyncComponent(() => import("../3D_Components/MagicCredits.vue"));
+const MagicGamepad = defineAsyncComponent(() => import("../3D_Components/MagicGamepad.vue"));
+const MagicMoon = defineAsyncComponent(() => import("../3D_Components/MagicMoon.vue"));
+const KuunenoFox = defineAsyncComponent(() => import("../3D_Components/KuunenoFox.vue"));
+const PikminEvol = defineAsyncComponent(() => import("../3D_Components/PikminEvol.vue"));
+const KuunenoSample = defineAsyncComponent(() => import("../3D_Components/KuunenoSample.vue"));
+const RoundTable = defineAsyncComponent(() => import("../3D_Components/RoundTable.vue"));
 // import SampleAnim from "../3D_Components/SampleAnim.vue";
 
 const props = defineProps<{
