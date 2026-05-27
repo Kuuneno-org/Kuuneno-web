@@ -1,4 +1,5 @@
 import { ref, onUnmounted } from 'vue';
+import { getApiUrl, getWebSocketUrl, appConfig } from '@/config/env';
 
 interface GameMessage {
   type: 'game_output' | 'game_error' | 'game_closed' | 'error';
@@ -19,9 +20,15 @@ interface GameStatus {
   status: 'idle' | 'launching' | 'running' | 'stopped' | 'error';
 }
 
-export function useGameServer(serverUrl: string = 'ws://localhost:9000') {
+export function useGameServer(serverUrl?: string) {
+  // Utiliser l'URL fournie ou celle de la config
+  const wsUrl = serverUrl || getWebSocketUrl();
+  
   const ws = ref<WebSocket | null>(null);
   const isConnected = ref(false);
+  const reconnectAttempts = ref(0);
+  let reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
+  
   const gameStatus = ref<GameStatus>({
     running: false,
     gameId: null,
@@ -31,18 +38,28 @@ export function useGameServer(serverUrl: string = 'ws://localhost:9000') {
   });
 
   /**
-   * Connecter au serveur WebSocket
+   * Connecter au serveur WebSocket avec reconnexion automatique
    */
   function connect(): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
-        console.log(`🔌 Tentative de connexion à ${serverUrl}...`);
-        ws.value = new WebSocket(serverUrl);
+        console.log(`🔌 Tentative de connexion à ${wsUrl}...`);
+        ws.value = new WebSocket(wsUrl);
+        
+        // Timeout pour la connexion initiale
+        const connectionTimeout = setTimeout(() => {
+          if (ws.value?.readyState === WebSocket.CONNECTING) {
+            ws.value?.close();
+            reject(new Error('WebSocket connection timeout'));
+          }
+        }, appConfig.websocket.connectionTimeout);
 
         ws.value.onopen = () => {
+          clearTimeout(connectionTimeout);
           console.log('✅ Connecté au serveur WebSocket');
           isConnected.value = true;
           gameStatus.value.status = 'idle';
+          reconnectAttempts.value = 0; // Reset reconnect counter
           resolve();
         };
 
@@ -56,19 +73,28 @@ export function useGameServer(serverUrl: string = 'ws://localhost:9000') {
         };
 
         ws.value.onerror = (event) => {
+          clearTimeout(connectionTimeout);
           console.error('❌ Erreur WebSocket:', event);
-          console.error('État de la connexion:', ws.value?.readyState);
           isConnected.value = false;
           gameStatus.value.status = 'error';
-          // Ne pas rejeter immédiatement, laisser onclose s'en charger
         };
 
         ws.value.onclose = () => {
+          clearTimeout(connectionTimeout);
           console.log('🔌 Déconnecté du serveur WebSocket');
           isConnected.value = false;
           gameStatus.value.running = false;
-          if (!ws.value?.readyState || ws.value.readyState === WebSocket.CLOSED) {
-            reject(new Error('Impossible de se connecter au serveur WebSocket'));
+          
+          // Tentatives de reconnexion
+          if (reconnectAttempts.value < appConfig.websocket.reconnectAttempts) {
+            reconnectAttempts.value++;
+            const delay = appConfig.websocket.reconnectDelay * reconnectAttempts.value;
+            console.log(`⏳ Tentative de reconnexion #${reconnectAttempts.value} dans ${delay}ms...`);
+            reconnectTimeout = setTimeout(() => {
+              connect().catch(console.error);
+            }, delay);
+          } else {
+            reject(new Error('Max reconnection attempts reached'));
           }
         };
       } catch (error) {
@@ -122,7 +148,7 @@ export function useGameServer(serverUrl: string = 'ws://localhost:9000') {
   }
 
   /**
-   * Lancer le jeu
+   * Lancer le jeu avec timeout
    */
   async function launchGame(): Promise<string | null> {
     try {
@@ -134,27 +160,35 @@ export function useGameServer(serverUrl: string = 'ws://localhost:9000') {
       gameStatus.value.output = [];
       gameStatus.value.errors = [];
 
-      const response = await fetch('http://localhost:9000/api/game/launch', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), appConfig.api.timeout);
+
+      try {
+        const response = await fetch(getApiUrl('/api/game/launch'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
         }
-      });
 
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
-      }
+        const data = await response.json();
 
-      const data = await response.json();
-
-      if (data.success) {
-        gameStatus.value.gameId = data.gameId;
-        gameStatus.value.running = true;
-        gameStatus.value.status = 'running';
-        console.log(`🎮 Jeu lancé avec l'ID: ${data.gameId}`);
-        return data.gameId;
-      } else {
-        throw new Error(data.message || 'Erreur inconnue');
+        if (data.success) {
+          gameStatus.value.gameId = data.gameId;
+          gameStatus.value.running = true;
+          gameStatus.value.status = 'running';
+          console.log(`🎮 Jeu lancé avec l'ID: ${data.gameId}`);
+          return data.gameId;
+        } else {
+          throw new Error(data.message || 'Erreur inconnue');
+        }
+      } finally {
+        clearTimeout(timeoutId);
       }
     } catch (error) {
       gameStatus.value.status = 'error';
@@ -165,7 +199,7 @@ export function useGameServer(serverUrl: string = 'ws://localhost:9000') {
   }
 
   /**
-   * Arrêter le jeu
+   * Arrêter le jeu avec timeout
    */
   async function stopGame(): Promise<void> {
     try {
@@ -175,24 +209,32 @@ export function useGameServer(serverUrl: string = 'ws://localhost:9000') {
 
       gameStatus.value.status = 'launching';
 
-      const response = await fetch(
-        `http://localhost:9000/api/game/stop/${gameStatus.value.gameId}`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), appConfig.api.timeout);
+
+      try {
+        const response = await fetch(
+          getApiUrl(`/api/game/stop/${gameStatus.value.gameId}`),
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            signal: controller.signal
           }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
         }
-      );
 
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
+        gameStatus.value.gameId = null;
+        gameStatus.value.running = false;
+        gameStatus.value.status = 'idle';
+        console.log('🛑 Jeu arrêté');
+      } finally {
+        clearTimeout(timeoutId);
       }
-
-      gameStatus.value.gameId = null;
-      gameStatus.value.running = false;
-      gameStatus.value.status = 'idle';
-      console.log('🛑 Jeu arrêté');
     } catch (error) {
       gameStatus.value.status = 'error';
       console.error('Erreur arrêt jeu:', error);
@@ -201,17 +243,26 @@ export function useGameServer(serverUrl: string = 'ws://localhost:9000') {
   }
 
   /**
-   * Obtenir le statut des jeux actifs
+   * Obtenir le statut des jeux actifs avec timeout
    */
   async function getGameStatus() {
     try {
-      const response = await fetch('http://localhost:9000/api/game/status');
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP: ${response.status}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), appConfig.api.timeout);
+
+      try {
+        const response = await fetch(getApiUrl('/api/game/status'), {
+          signal: controller.signal
+        });
+        if (!response.ok) {
+          throw new Error(`Erreur HTTP: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('📊 Statut des jeux:', data);
+        return data;
+      } finally {
+        clearTimeout(timeoutId);
       }
-      const data = await response.json();
-      console.log('📊 Statut des jeux:', data);
-      return data;
     } catch (error) {
       console.error('Erreur récupération statut:', error);
       throw error;
@@ -233,6 +284,10 @@ export function useGameServer(serverUrl: string = 'ws://localhost:9000') {
    * Nettoyer à la destruction du composant
    */
   onUnmounted(() => {
+    if (reconnectTimeout) {
+      clearTimeout(reconnectTimeout);
+      reconnectTimeout = null;
+    }
     if (gameStatus.value.running) {
       stopGame().catch(console.error);
     }
