@@ -3891,7 +3891,7 @@
     },
     {
       "bufferView": 2,
-      "byteOffset": 249000,
+      "byteOffset": 248080,
       "componentType": 5126,
       "count": 70,
       "max": [
@@ -5500,7 +5500,7 @@
     },
     {
       "bufferView": 0,
-      "byteOffset": 129000,
+      "byteOffset": 128080,
       "componentType": 5125,
       "count": 384,
       "type": "SCALAR"

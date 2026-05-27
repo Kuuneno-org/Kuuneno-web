@@ -170,6 +170,33 @@ function recenter() {
   controls.setIndex(-1);
 }
 
+const keys: Record<string, boolean> = {};
+
+window.addEventListener('keydown', (e) => {
+  keys[e.key] = true;
+})
+
+window.addEventListener('keyup', (e) => {
+  keys[e.key] = false;
+})
+
+// Gérer les directions avec les touches du clavier pour prev et next
+window.addEventListener('keydown', (e) => {
+  switch (e.key) {
+    case 'Escape':
+      recenter();
+      break;
+    case 'ArrowLeft':
+      prev();
+      break;
+    case 'ArrowRight':
+      next();
+      break;
+    default:
+      break;
+  }
+})
+
 function onSelectIndex(i: number) {
   controls.setIndex(i);
 }

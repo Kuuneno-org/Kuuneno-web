@@ -1,14 +1,14 @@
 <template>
   <div class="story-page">
-    <button class="back-btn" @click="$router.push('/')">← Retour</button>
-    <!-- Le chemin doit être absolu depuis la racine du serveur, mais sans 'public' -->
-    <!-- CheerpJ utilise un système de fichiers virtuel. /app/ correspond à la racine du serveur web -->
-    <KuunenoGame jarPath="/app/games/Java-SnakeGame.jar" :width="800" :height="600" />
+    <!-- <button class="back-btn" @click="$router.push('/')">← Retour</button>
+    <KuunenoGame jarPath="/app/games/Kuenos.jar" :width="800" :height="600" /> -->
+    <GameTitleScreen />
   </div>
 </template>
 
 <script setup lang="ts">
-import KuunenoGame from "@/components/game/KuunenoGame.vue";
+// import KuunenoGame from "@/components/game/KuunenoGame.vue";
+import GameTitleScreen from "@/components/ui/GameTitleScreen.vue";
 </script>
 
 <style scoped>

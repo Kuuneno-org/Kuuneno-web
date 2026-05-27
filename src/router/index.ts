@@ -6,7 +6,8 @@ const routes: RouteRecordRaw[] = [
   { path: "/credits", name: "credits", component: () => import("@/pages/CreditsPage.vue") },
   { path: "/tribu", name: "tribe", component: () => import("@/pages/TribePage.vue") },
   { path: "/lore", name: "lore", component: () => import("@/pages/StubPage.vue") },
-  { path: "/mini-jeu", name: "minigame", component: () => import("@/pages/StubPage.vue") },
+  { path: "/mini-jeu", name: "minigame", component: () => import("@/pages/MiniGamePage.vue") },
+  { path: "/game-server", name: "gameserver", component: () => import("@/pages/GameServerPage.vue") },
   { path: "/:pathMatch(.*)*", redirect: "/" },
 ];
 
