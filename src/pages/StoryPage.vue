@@ -1,13 +1,10 @@
 <template>
   <div class="story-page">
-    <!-- <button class="back-btn" @click="$router.push('/')">← Retour</button>
-    <KuunenoGame jarPath="/app/games/Kuenos.jar" :width="800" :height="600" /> -->
     <GameTitleScreen />
   </div>
 </template>
 
 <script setup lang="ts">
-// import KuunenoGame from "@/components/game/KuunenoGame.vue";
 import GameTitleScreen from "@/components/ui/GameTitleScreen.vue";
 </script>
 

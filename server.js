@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Configuration
 const PORT = process.env.PORT || 9000;
-const GAME_JAR = path.join(__dirname, 'public/games/KuenosGame.jar');
+const GAME_JAR = path.join(__dirname, 'public/games/KuunenosGame.jar');
 
 // Map pour stocker les processus Java actifs
 const activeGames = new Map();

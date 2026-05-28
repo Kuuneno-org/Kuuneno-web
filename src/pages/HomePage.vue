@@ -74,7 +74,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import { computed } from "vue";
 import { useRouter } from "vue-router";
 import HomeScene from "@/components/home/HomeScene.vue";
@@ -86,6 +86,9 @@ import bgMusicUrl from "@/assets/musics/game-background-music.mp3";
 const router = useRouter();
 const controls = useHomeControls();
 const isGameStarted = ref(false);
+
+// Reset focus on page load
+controls.setIndex(-1);
 
 const itemDescriptions: Record<string, string> = {
   "mask": "Plongez dans les mystères de la tribu Kuuneno à travers une expérience narrative unique.",
@@ -172,16 +175,9 @@ function recenter() {
 
 const keys: Record<string, boolean> = {};
 
-window.addEventListener('keydown', (e) => {
+// Keyboard event handlers
+function handleKeyDown(e: KeyboardEvent) {
   keys[e.key] = true;
-})
-
-window.addEventListener('keyup', (e) => {
-  keys[e.key] = false;
-})
-
-// Gérer les directions avec les touches du clavier pour prev et next
-window.addEventListener('keydown', (e) => {
   switch (e.key) {
     case 'Escape':
       recenter();
@@ -195,7 +191,21 @@ window.addEventListener('keydown', (e) => {
     default:
       break;
   }
-})
+}
+
+function handleKeyUp(e: KeyboardEvent) {
+  keys[e.key] = false;
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', handleKeyDown);
+  window.addEventListener('keyup', handleKeyUp);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyDown);
+  window.removeEventListener('keyup', handleKeyUp);
+});
 
 function onSelectIndex(i: number) {
   controls.setIndex(i);

@@ -44,7 +44,7 @@
             <!-- Main Content -->
             <main class="main-content">
                 <div class="logo-container">
-                    <img src="@/assets/logo/kuuneno_logo.png" alt="Kuuneno Logo" class="app-logo" />
+                    <img src="@/assets/logo/logo.png" alt="Kuuneno Logo" class="app-logo" />
                 </div>
 
                 <div class="intro-text">

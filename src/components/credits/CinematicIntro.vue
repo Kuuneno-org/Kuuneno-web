@@ -78,7 +78,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import gsap from 'gsap'
-import kuunenoLogo from '@/assets/logo/kuuneno_logo.png'
+import kuunenoLogo from '@/assets/logo/logo.png'
 
 const sectionRef = ref<HTMLElement | null>(null)
 const logoRef = ref<HTMLElement | null>(null)

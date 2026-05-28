@@ -107,7 +107,7 @@
         <h3 class="text-white font-semibold mb-3">🐛 Débogage</h3>
         <div class="space-y-2 text-sm text-slate-400">
           <p><span class="text-slate-300">Serveur:</span> ws://localhost:9000</p>
-          <p><span class="text-slate-300">JAR:</span> public/games/KuenosGame.jar</p>
+          <p><span class="text-slate-300">JAR:</span> public/games/KuunenosGame.jar</p>
           <p><span class="text-slate-300">Jeux actifs:</span> {{ activeGameCount }}</p>
           <p><span class="text-slate-300">Dernière mise à jour:</span> {{ lastUpdate }}</p>
         </div>

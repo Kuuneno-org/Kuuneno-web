@@ -66,29 +66,36 @@
               v-for="item in menuItems"
               :key="item.key"
               ref="menuBtnRefs"
-              class="group relative w-[min(420px,78vw)] overflow-hidden rounded-2xl border border-white/15 bg-white/5 px-5 py-4 text-center text-sm font-semibold uppercase tracking-[0.22em] text-white/90 backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:border-white/25 hover:bg-white/10 active:translate-y-0"
+              class="group relative w-[min(440px,82vw)] overflow-hidden rounded-2xl border border-white/15 bg-slate-950/30 px-5 py-4 text-center text-sm font-semibold uppercase tracking-[0.22em] text-white/90 shadow-[0_18px_50px_rgba(0,0,0,0.22)] backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:border-glow/45 hover:bg-white/10 hover:shadow-[0_18px_55px_rgba(245,158,11,0.18)] active:translate-y-0 active:scale-[0.98]"
               type="button"
               @click="handleMenuClick(item.emit)"
             >
               <span
-                class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100 bg-[linear-gradient(90deg,rgba(245,158,11,0)_0%,rgba(245,158,11,0.10)_55%,rgba(245,158,11,0.20)_100%)]"
+                class="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100 bg-[linear-gradient(90deg,rgba(245,158,11,0)_0%,rgba(245,158,11,0.15)_52%,rgba(245,158,11,0.06)_100%)]"
+                aria-hidden="true"
+              />
+              <span
+                class="pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-700 group-hover:translate-x-[330%]"
+                aria-hidden="true"
+              />
+              <span
+                class="pointer-events-none absolute left-4 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-glow/0 blur-sm transition-all duration-300 group-hover:bg-glow/70 group-hover:shadow-[0_0_20px_rgba(245,158,11,0.75)]"
                 aria-hidden="true"
               />
               <span class="relative flex items-center justify-center gap-4">
-                <span class="text-white/55">⟵</span>
-                <span>{{ item.label }}</span>
-                <span class="text-white/55">⟶</span>
+                <span class="text-glow/70 transition-all duration-300 group-hover:scale-125 group-hover:text-glow group-hover:drop-shadow-[0_0_10px_rgba(245,158,11,0.75)]">✦</span>
+                <span class="transition-colors duration-300 group-hover:text-white">{{ item.label }}</span>
+                <span class="text-glow/70 transition-all duration-300 group-hover:scale-125 group-hover:text-glow group-hover:drop-shadow-[0_0_10px_rgba(245,158,11,0.75)]">✦</span>
               </span>
             </button>
           </div>
-
           <div ref="promoRef" class="w-[min(520px,82vw)] text-center">
-            <!-- <p class="text-[11px] font-semibold uppercase tracking-[0.28em] text-white/60 drop-shadow-[0_14px_46px_rgba(0,0,0,0.6)]">
-              Mini‑jeu web en cours d'intégration
-            </p> -->
-            <p class="mt-2 text-xs text-white/55 drop-shadow-[0_14px_46px_rgba(0,0,0,0.6)]">
-              Information: Mini-jeu web en cours d'intégration
-            </p>
+            <div class="inline-flex items-center gap-3 rounded-full border border-glow/20 bg-slate-950/35 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-white/65 shadow-[0_12px_40px_rgba(0,0,0,0.24)] backdrop-blur-md">
+              <span class="h-2 w-2 rounded-full bg-glow shadow-[0_0_14px_rgba(245,158,11,0.9)]" />
+              <span class="text-glow/90">En cours</span>
+              <span class="h-3 w-px bg-white/15" />
+              <span>Jeu en développement</span>
+            </div>
           </div>
         </div>
       </div>
@@ -104,13 +111,16 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { useRouter } from "vue-router";
 import gsap from "gsap";
 import JavaGameLauncher from "@/components/game/JavaGameLauncher.vue";
 import skyUrl from "@/assets/gametitle/sky.png";
 import fieldUrl from "@/assets/gametitle/field.png";
 import treesUrl from "@/assets/gametitle/trees.png";
-import brandLogoUrl from "@/assets/logo/kuuneno_logo.png";
+import brandLogoUrl from "@/assets/logo/logo.png";
 import transitionUrl from "@/assets/transition.mp4";
+
+const router = useRouter();
 
 const emit = defineEmits<(e: "start" | "continue" | "options" | "credits" | "back") => void>();
 
@@ -206,14 +216,29 @@ function onIntroEnded() {
 function handleMenuClick(action: "start" | "options" | "credits" | "back") {
   if (action === "start") {
     gameStarted.value = true;
+    emit(action);
     return;
   }
 
-  emit(action);
+  if (action === "back") {
+    router.push("/");
+    return;
+  }
+
+  if (action === "credits") {
+    router.push("/credits");
+    return;
+  }
 }
 
 function handleGameClosed() {
   gameStarted.value = false;
+  // Reset overlay trigger to show menu animations again
+  overlayTriggered.value = false;
+  // Trigger overlay animation when menu reappears
+  setTimeout(() => {
+    triggerOverlay();
+  }, 100);
 }
 
 onMounted(() => {
