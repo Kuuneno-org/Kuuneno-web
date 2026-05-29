@@ -124,3 +124,4 @@ dist
 
 # Others
 docs/
+*.jar

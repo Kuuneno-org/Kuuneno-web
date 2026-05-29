@@ -37,7 +37,7 @@
         </div>
 
         <!-- Subtitle -->
-        <p class="subtitle">Le portail des Kuunenos s'ouvre</p>
+        <p class="subtitle">Plongez dans cet univers fantastique</p>
 
         <!-- Actions section -->
         <div class="actions">
